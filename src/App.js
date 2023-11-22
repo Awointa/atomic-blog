@@ -1,4 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+
+import { PostProvider, PostContext } from "./PostContext";
+
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -8,34 +11,8 @@ function createRandomPost() {
 	};
 }
 
-// CREATE A NEW CONTEXT
-const PostContext = createContext();
-
 function App() {
-	const [posts, setPosts] = useState(() =>
-		Array.from({ length: 30 }, () => createRandomPost()),
-	);
-	const [searchQuery, setSearchQuery] = useState("");
 	const [isFakeDark, setIsFakeDark] = useState(false);
-
-	// Derived state. These are the posts that will actually be displayed
-	const searchedPosts =
-		searchQuery.length > 0
-			? posts.filter((post) =>
-					`${post.title} ${post.body}`
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()),
-			  )
-			: posts;
-
-	function handleAddPost(post) {
-		setPosts((posts) => [post, ...posts]);
-	}
-
-	function handleClearPosts() {
-		setPosts([]);
-	}
-
 	// Whenever `isFakeDark` changes, we toggle the `fake-dark-mode` class on the HTML element (see in "Elements" dev tool).
 	useEffect(
 		function () {
@@ -46,14 +23,7 @@ function App() {
 
 	return (
 		// PROVIDE VALUE TO CHILD COMPONENTS
-		<PostContext.Provider
-			value={{
-				posts: searchedPosts,
-				onClearPosts: handleClearPosts,
-				onAddPost: handleAddPost,
-				setSearchQuery: setSearchQuery,
-			}}
-		>
+		<PostProvider>
 			<section>
 				<button
 					onClick={() => setIsFakeDark((isFakeDark) => !isFakeDark)}
@@ -62,17 +32,12 @@ function App() {
 					{isFakeDark ? "☀️" : "🌙"}
 				</button>
 
-				<Header
-					posts={searchedPosts}
-					onClearPosts={handleClearPosts}
-					searchQuery={searchQuery}
-					setSearchQuery={setSearchQuery}
-				/>
-				<Main posts={searchedPosts} onAddPost={handleAddPost} />
-				<Archive onAddPost={handleAddPost} />
+				<Header />
+				<Main />
+				<Archive />
 				<Footer />
 			</section>
-		</PostContext.Provider>
+		</PostProvider>
 	);
 }
 
